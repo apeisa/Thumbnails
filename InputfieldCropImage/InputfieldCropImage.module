@@ -1,0 +1,57 @@
+<?php
+
+class InputfieldCropImage extends InputfieldImage {
+
+	public static function getModuleInfo() {
+		return array(
+			'title' => 'Images with cropping',
+			'version' => 100,
+			'summary' => 'Regular images with cropping',
+			'permanent' => false, 
+			);
+	}
+
+	public function init() {
+		parent::init();
+	}
+	
+	public function ___render() {
+		$this->config->scripts->add($this->config->urls->InputfieldImage . "InputfieldImage.js");
+		$this->config->styles->add($this->config->urls->InputfieldImage . "InputfieldImage.css");
+		return parent::___render();
+	}
+
+	protected function renderItem($pagefile, $id, $n) {
+		
+		$out = parent::renderItem($pagefile, $id, $n);
+
+		$crops = $this->modules->get('ProcessCropImage')->crops;
+		if (strlen($crops)>3) {
+			$cropUrl = "../image-crop/";
+			$cropStr = "\n\t\t\t<ul>". $this->_getCropLinks($crops, $cropUrl, $pagefile) . "</ul></li>";
+		}
+		
+		// We add our crop string at the end of the list item that holds image
+		$out = str_ireplace('</li>', $cropStr, $out);
+
+		return $out; 
+	}
+	
+	public function install() {
+		parent::___install();
+		$this->modules->get('ProcessCropImage');
+		$this->modules->get('FieldtypeCropImage');
+	}
+
+	private function _getCropLinks($crops, $cropUrl, $pagefile){
+		$out = '';
+		$crops = explode("\n", $crops);
+		foreach($crops as $crop) {
+			$crop = explode(",", $crop);
+			$prefix = $this->sanitizer->name($crop[0]);
+			$thumbUrl = $pagefile->getThumb($prefix, $this->name);
+			$out .= "<li><a target='_blank' data-thumburl='{$thumbUrl}' class='crop' href='$cropUrl?filename={$pagefile->basename}&prefix={$prefix}&width={$crop[1]}&height={$crop[2]}&pages_id={$this->input->get->id}&field={$this->name}&modal=1'>$crop[0]</a></li>";
+		}
+		return $out;
+	}
+}

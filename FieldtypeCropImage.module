@@ -1,0 +1,83 @@
+<?php
+class FieldtypeCropImage extends FieldtypeImage {
+
+        public static function getModuleInfo() {
+                return array(
+                        'title' => 'Images with cropping',
+                        'version' => 100,
+                        'summary' => 'Field that stores one or more GIF, JPG, or PNG images',
+                        );
+        }
+
+        public function init() {
+                $this->addHook('Pageimage::getThumb', $this, 'getThumb');  
+        }
+
+        public function getThumb(HookEvent $event) {
+				
+				$thumbFound = false;
+                $thumb = $event->arguments[0];
+
+                $crops = wire('modules')->get('ProcessCropImage')->crops;
+
+				$crops_a = explode("\n", $crops); // ie. thumbname,200,200 (name,width,height)
+
+				foreach($crops_a as $crop) {
+					$crop = explode(",", $crop);
+					if ($crop[0] == $thumb) {
+						$this->w = (int) $crop[1];
+						$this->h = (int) $crop[2];
+						$thumbFound = true;
+						break;
+					}
+				}
+				
+				if ($thumbFound === false) {
+					throw new WireException("There is no thumb called: $thumb"); 
+					return;
+				}
+				
+				if ($this->w < 1 || $this->h < 1) {
+					throw new WireException("Width and/or height not found for thumb: $thumb"); 
+					return;
+				}				
+
+				$prefix = $this->sanitizer->name($thumb);
+                $img = $event->object;
+                $imgPath = $img->pagefiles->path . $prefix . "_" . $img->basename;
+                $imgUrl = $img->pagefiles->url . $prefix . "_" . $img->basename;
+
+				// We have a file, that is probably ok...
+                if(is_file($imgPath)) {
+					
+					// But we check if the size matches for desired and resize if not
+					$sizer = new ImageSizer($imgPath);
+					if ($this->w != $sizer->getWidth() || $this->h != $sizer->getHeight()) {
+						$this->_copyAndResize($img, $imgPath);
+					}
+					 
+					// And finally we return the url
+					$event->return = $imgUrl;
+                }
+				
+				// Image not found, we take basic crop from original
+				else {
+					$this->_copyAndResize($img, $imgPath);
+					$event->return = $imgUrl;
+                }
+				return true;
+        }
+		
+		public function install() {
+			parent::___install();
+			$this->modules->get('ProcessCropImage');
+			$this->modules->get('InputfieldCropImage');
+		}
+		
+		private function _copyAndResize($img, $imgPath) {
+			if(@copy($img->pagefiles->path . $img->basename, $imgPath)) {
+				$sizer = new ImageSizer($imgPath); 
+				$sizer->resize($this->w, $this->h);						
+			}
+		}
+}

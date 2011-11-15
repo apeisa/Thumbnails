@@ -1,0 +1,176 @@
+<?php
+class ProcessCropImage extends Process implements ConfigurableModule  {
+
+	public static function getModuleInfo() {
+		return array(
+			'title' => 'Image cropping tool',
+			'summary' => 'Crop thumbnails - this is where you edit your crop setups',
+			'version' => 100,
+			'permanent' => false,
+			'autoload' => false,
+			'singular' => true
+		);
+	}
+	
+	static public function getDefaultData() {
+	   return array(
+		   'crops' => 'thumbnail,100,100'
+		   );
+	}
+	
+	public function __construct() {
+	   foreach(self::getDefaultData() as $key => $value) {
+		   $this->$key = $value;
+	   }
+	}
+	
+	public function ___execute() {
+		
+		$this->config->scripts->add($this->config->urls->ProcessCropImage . "Jcrop/js/jquery.Jcrop.min.js");
+		$this->config->styles->add($this->config->urls->ProcessCropImage . "Jcrop/css/jquery.Jcrop.css");
+		
+		$this->setFuel('processHeadline', 'Crop images');
+		
+		$pages_id = (int) $this->input->get->pages_id;
+		$filename = $this->input->get->filename;
+		$field = $this->input->get->field;
+		$height = $this->input->get->height;
+		$width = $this->input->get->width;
+		$prefix = $this->input->get->prefix;
+		
+		if ($pages_id < 0 || strlen($filename) < 3) {
+			$out = "<p class='description'>This page only works when you come from image field.</p>";
+		} else {
+			$img = wire('pages')->get($pages_id)->{$field}->get("$filename");
+			//$imageUrl = $this->config->urls->files . $pages_id . "/" . $filename;
+			$imageUrl = $img->url;
+			$aspectRatio = $width / $height;
+			$out = '';
+			
+			$out .= "<div><p class='description'>Click and drag the cropped area with your cursor. Cropped image will be resized to <b>{$width}</b>x<b>{$height}</b> pixels. Under the image you see preview of what you will get.</p><img src='$imageUrl' data-aspectratio='$aspectRatio' data-width='{$width}' data-height='{$height}' id='jcrop_target' /></div>";
+			
+	
+			$out .= "<div id='preview-container' style='width:{$width}px;'><div style='float: left; overflow:hidden; height:{$height}px; width:{$width}px;'><img src='$imageUrl' id='preview' /></div>";
+			$out .= "</div>";
+			
+			$out .= <<<FORM
+<form style='float:left;' method="POST" action="./save/?modal=1">
+	<input type="hidden" name="filename" value="{$filename}" />
+	<input type="hidden" name="field" value="{$field}" />
+	<input type="hidden" name="pages_id" value="{$pages_id}" />
+	<input type="hidden" name="width" value="{$width}" />
+	<input type="hidden" name="height" value="{$height}" />
+	<input type="hidden" name="prefix" value="{$prefix}" />
+	<input type="hidden" id="x1" name="crop[x1]">
+	<input type="hidden" id="y1" name="crop[y1]">
+	<input type="hidden" id="w" name="crop[w]">
+	<input type="hidden" id="h" name="crop[h]">
+	<button type="submit" class="ui-button ui-widget ui-corner-all head_button_clone ui-state-default" id="cropButton">Crop and go</button>
+</form>		
+FORM;
+			
+		}
+		
+		return $out;
+	}
+	
+	public function ___executeSave() {
+		
+		$pages_id = (int) $this->input->post->pages_id;
+		$filename = $this->input->post->filename;
+		$field = $this->input->post->field;
+		$crop = $this->input->post->crop;
+		$prefix = $this->input->post->prefix;
+		$targetWidth = $this->input->post->width;
+		$targetHeight = $this->input->post->height;
+
+		$page = wire('pages')->get($pages_id);
+
+		$img = $page->{$field}->get("$filename");
+		$imagePath = wire('config')->paths->files . $pages_id . "/" . $filename;
+
+		$targetPath = wire('config')->paths->files . $pages_id . "/{$prefix}_{$filename}";
+		$targetUrl = wire('config')->urls->files . $pages_id . "/{$prefix}_{$filename}";
+		
+		$jpeg_quality = 90;
+
+		$p = pathinfo($filename); 
+		$extension = strtolower($p['extension']); 
+	
+		switch($extension) {
+			case 'gif': $img_r = imagecreatefromgif($imagePath); break;
+			case 'png': $img_r = imagecreatefrompng($imagePath); break;
+			case 'jpeg':
+			case 'jpg': $img_r = imagecreatefromjpeg($imagePath); break;
+		}
+	
+		$dst_r = ImageCreateTrueColor( $targetWidth, $targetHeight);
+	
+		imagecopyresampled($dst_r,$img_r,0,0,$crop['x1'],$crop['y1'],$targetWidth,$targetHeight,$crop['w'],$crop['h']);
+
+		// write to file
+		switch($extension) {
+			case 'gif': 
+				imagegif($dst_r,$targetPath); 
+				break;
+			case 'png': 
+				// convert 1-100 (worst-best) scale to 0-9 (best-worst) scale for PNG 
+				$quality = round(abs(($jpeg_quality - 100) / 11.111111)); 
+				imagepng($dst_r,$targetPath,$quality); 
+				break;
+			case 'jpeg':
+			case 'jpg': 
+				imagejpeg($dst_r,$targetPath,$jpeg_quality); 
+				break;
+		}
+
+		$out  = "<img src='$targetUrl' />";
+		$out .= "<ul><li><button class='ui-button ui-widget ui-corner-all head_button_clone ui-state-default' onclick=\"parent.$('.ui-dialog-content').dialog('close');\">Wow, that looks great!</button></li>";
+		$out .= "<li><a class='modal' href='../?filename={$filename}&prefix={$prefix}&width={$targetWidth}&height={$targetHeight}&pages_id={$pages_id}&field={$field}&modal=1'>Not happy? Crop again!</a></li></ul>";
+		return $out;
+	}
+	
+	/**
+	 * Build a form allowing configuration of this Module
+	 *
+	 */
+	static public function getModuleConfigInputfields(array $data) {
+		
+		$data = array_merge(self::getDefaultData(), $data);
+
+		$fields = new InputfieldWrapper();
+		$modules = Wire::getFuel('modules');
+
+		$f = $modules->get('InputfieldTextarea');
+		$f->attr('name', 'crops'); 
+		$f->attr('rows', 5);
+		$f->attr('value', $data['crops']); 
+		$f->label = 'Crop setups';
+		$f->description = 'Enter all crop dimensions, one on each line and in this format: name,width,height. Few examples: "thumbnail,200,200" or "portrait,200,600"'; 
+		$fields->append($f);
+		
+		return $fields;
+	}
+	
+	public function ___install() {
+		parent::___install();
+		
+		$this->modules->get('FieldtypeCropImage');
+		$this->modules->get('InputfieldCropImage');
+
+		$p = new Page();
+		$p->template = $this->templates->get("admin");
+		$p->parent = $this->pages->get(3); // /admin/pages
+		$p->title = 'Image crop';
+		$p->name = 'image-crop';
+		$p->process = $this;
+		$p->save();
+	}
+	
+	public function ___uninstall() {
+		parent::___uninstall();
+		
+		$imageCrop = $this->pages->get(3)->children()->get('name=image-crop');
+		$imageCrop->delete();
+	}
+}
