@@ -10,6 +10,11 @@ $(document).ready(function() {
 		}
 	});
 	
+	$(".InputfieldCropImage .InputfieldFileList").live('AjaxUploadDone', function() {
+		console.log("it should");
+		$("a.InputfieldFileLink", $(this)).fancybox(); 
+	}); 
+	
 	/* Modal disabled, cropping huge images is very difficult with modals
 	$("a.crop").live("click", function() {
 		var url = $(this).attr('href');
