@@ -1,10 +1,13 @@
 $(function(){
-	var ar = $('#jcrop_target').data('aspectratio');
-	$('#jcrop_target').Jcrop({
-		onChange: showCoords,
-		onSelect: showCoords,
-		aspectRatio: ar
-	});
+	$crop = $('#jcrop_target');
+	if ($crop.length > 0) {
+		var ar = $crop.data('aspectratio');
+		$crop.Jcrop({
+			onChange: showCoords,
+			onSelect: showCoords,
+			aspectRatio: ar
+		});
+	}
 });
 
 function showCoords(c)

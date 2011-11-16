@@ -123,9 +123,12 @@ FORM;
 				imagejpeg($dst_r,$targetPath,$jpeg_quality); 
 				break;
 		}
-
-		$out  = "<img src='$targetUrl' />";
-		$out .= "<ul><li><button class='ui-button ui-widget ui-corner-all head_button_clone ui-state-default' onclick=\"parent.$('.ui-dialog-content').dialog('close');\">Wow, that looks great!</button></li>";
+		
+		// Timestamp prevents browser cache, at least I hope so :)
+		$timestamp = time();
+		$out  = "<img src='{$targetUrl}?timestamp={$timestamp}' />";
+		//$out .= "<ul><li><button class='ui-button ui-widget ui-corner-all head_button_clone ui-state-default' onclick=\"parent.$('.ui-dialog-content').dialog('close');\">Wow, that looks great!</button></li>";
+		$out .= "<ul><li><button class='ui-button ui-widget ui-corner-all head_button_clone ui-state-default' onclick=\"window.close();\">Wow, that looks great!</button></li>";
 		$out .= "<li><a class='modal' href='../?filename={$filename}&prefix={$prefix}&width={$targetWidth}&height={$targetHeight}&pages_id={$pages_id}&field={$field}&modal=1'>Not happy? Crop again!</a></li></ul>";
 		return $out;
 	}
