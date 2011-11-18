@@ -28,7 +28,7 @@ class InputfieldCropImage extends InputfieldImage {
 		$crops = $this->modules->get('ProcessCropImage')->crops;
 		if (strlen($crops)>3) {
 			$cropUrl = "../image-crop/";
-			$cropStr = "\n\t\t\t<div class='ui-widget-content crops'><p class='description'>Crop setups (hover to preview, click to crop)</p>". $this->_getCropLinks($crops, $cropUrl, $pagefile) . "</div></li>";
+			$cropStr = "\n\t\t\t<div class='ui-widget-content crops'><p class='description'>Thumbnails (hover to preview, click to crop)</p>". $this->_getCropLinks($crops, $cropUrl, $pagefile) . "</div></li>";
 		}
 		
 		// We add our crop string at the end of the list item that holds image
@@ -51,6 +51,9 @@ class InputfieldCropImage extends InputfieldImage {
 			$prefix = $this->sanitizer->name($crop[0]);
 			$thumbUrl = $pagefile->getThumb($prefix, $this->name);
 			$out .= "<a target='_blank' data-thumburl='{$thumbUrl}' class='crop' href='$cropUrl?filename={$pagefile->basename}&prefix={$prefix}&width={$crop[1]}&height={$crop[2]}&pages_id={$this->input->get->id}&field={$this->name}&modal=1'>$crop[0]</a>";
+		}
+		if ($this->modules->get('ProcessCropImage')->cropOriginal) {
+			$out .= "<a target='_blank' data-thumburl='{$thumbUrl}' class='cropOriginal' href='$cropUrl?filename={$pagefile->basename}&pages_id={$this->input->get->id}&field={$this->name}&modal=1'>ORIGINAL</a>";
 		}
 		return $out;
 	}

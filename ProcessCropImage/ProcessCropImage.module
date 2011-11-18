@@ -4,7 +4,8 @@ class ProcessCropImage extends Process implements ConfigurableModule  {
 	public static function getModuleInfo() {
 		return array(
 			'title' => 'Image cropping tool',
-			'summary' => 'Crop thumbnails - this is where you edit your crop setups',
+			'summary' => 'Crop thumbnails (this is where you edit your crop setups)',
+			'href' => 'http://processwire.com/talk/index.php/topic,705.0.html',
 			'version' => 100,
 			'permanent' => false,
 			'autoload' => false,
@@ -14,7 +15,8 @@ class ProcessCropImage extends Process implements ConfigurableModule  {
 	
 	static public function getDefaultData() {
 	   return array(
-		   'crops' => 'thumbnail,100,100'
+		   'crops' => 'thumbnail,100,100',
+		   'cropOriginal' => 0
 		   );
 	}
 	
@@ -69,7 +71,8 @@ FORM;
 			$out .= "<p class='description'>Click and drag the cropped area with your cursor. Cropped image will be resized to <b>{$width}</b>x<b>{$height}</b> pixels.</p>";		
 			$out .= "</div>";
 	
-			$out .= "<div id='bd'><img src='$imageUrl' data-width='{$width}' data-height='{$height}' id='jcrop_target' /><div id='preview-container' style='overflow:hidden; height:{$height}px; width:{$width}px;'><img src='$imageUrl' id='preview' /></div>";
+			$out .= "<div id='bd'><img src='$imageUrl' data-width='{$width}' data-height='{$height}' id='jcrop_target' />";
+			if ($width) $out .= "<div id='preview-container' style='overflow:hidden; height:{$height}px; width:{$width}px;'><img src='$imageUrl' id='preview' /></div>";
 			$out .= "</div>";
 		}
 		
@@ -78,6 +81,8 @@ FORM;
 	
 	public function ___executeSave() {
 		
+		$this->config->styles->add($this->config->urls->ProcessCropImage . "ProcessCropImage2.css");
+		
 		$pages_id = (int) $this->input->post->pages_id;
 		$filename = $this->input->post->filename;
 		$field = $this->input->post->field;
@@ -85,6 +90,11 @@ FORM;
 		$prefix = $this->input->post->prefix;
 		$targetWidth = $this->input->post->width;
 		$targetHeight = $this->input->post->height;
+		
+		if (!$prefix) {
+			$targetHeight = $crop['h'];
+			$targetWidth = $crop['w'];
+		}
 
 		$page = wire('pages')->get($pages_id);
 
@@ -135,7 +145,8 @@ FORM;
 		$out  = "<div id='results'><img src='{$targetUrl}?timestamp={$timestamp}' />";
 		//$out .= "<ul><li><button class='ui-button ui-widget ui-corner-all head_button_clone ui-state-default' onclick=\"parent.$('.ui-dialog-content').dialog('close');\">Wow, that looks great!</button></li>";
 		$out .= "<ul><li><button class='ui-button ui-widget ui-corner-all head_button_clone ui-state-default' onclick=\"window.close();\">Wow, that looks great!</button></li>";
-		$out .= "<li><a class='modal' href='../?filename={$filename}&prefix={$prefix}&width={$targetWidth}&height={$targetHeight}&pages_id={$pages_id}&field={$field}&modal=1'>Not happy? Crop again!</a></li></ul></div>";
+		if ($prefix) $out .= "<li><a class='modal' href='../?filename={$filename}&prefix={$prefix}&width={$targetWidth}&height={$targetHeight}&pages_id={$pages_id}&field={$field}&modal=1'>Not happy? Crop again!</a></li>";
+		$out .= "</ul></div>";
 		return $out;
 	}
 	
@@ -149,6 +160,17 @@ FORM;
 
 		$fields = new InputfieldWrapper();
 		$modules = Wire::getFuel('modules');
+		
+		/*
+		 TODO: Should use Pageimage class for resizes when cropping original
+		$f= $modules->get('InputfieldCheckbox');
+		$f->name = "cropOriginal";
+		$f->label = "EXPERIMENTAL: Allow cropping the original files";
+		$f->description = "If checked, then it is possible to crop original image, not just thumbnails. Currently little hazardy and for testing only.";
+		$f->value = 1; // providing a "checked" value for the checkbox is necessary
+		$f->attr('checked', empty($data['cropOriginal']) ? '' : 'checked');
+		$fields->append($f);
+		*/
 
 		$f = $modules->get('InputfieldTextarea');
 		$f->attr('name', 'crops'); 
