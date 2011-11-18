@@ -1,7 +1,6 @@
 $(function(){
 	$crop = $('#jcrop_target');
 	if ($crop.length > 0) {
-		var ar = $crop.data('aspectratio');
 		var w = $('#jcrop_target').data('width');
 		var h = $('#jcrop_target').data('height');
 		$crop.Jcrop({
@@ -10,6 +9,9 @@ $(function(){
 			aspectRatio: w/h
 		});
 	}
+	$('#show_preview').click(function(){
+		$('#preview-container').toggleClass('hide');
+	})
 });
 
 function showCoords(c)

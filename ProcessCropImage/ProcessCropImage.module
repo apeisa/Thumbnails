@@ -44,17 +44,11 @@ class ProcessCropImage extends Process implements ConfigurableModule  {
 			$img = wire('pages')->get($pages_id)->{$field}->get("$filename");
 			//$imageUrl = $this->config->urls->files . $pages_id . "/" . $filename;
 			$imageUrl = $img->url;
-			$aspectRatio = $width / $height;
 			$out = '';
 			
-			$out .= "<div><p class='description'>Click and drag the cropped area with your cursor. Cropped image will be resized to <b>{$width}</b>x<b>{$height}</b> pixels. Under the image you see preview of what you will get.</p><img src='$imageUrl' data-aspectratio='$aspectRatio' data-width='{$width}' data-height='{$height}' id='jcrop_target' /></div>";
-			
-	
-			$out .= "<div id='preview-container' style='width:{$width}px;'><div style='float: left; overflow:hidden; height:{$height}px; width:{$width}px;'><img src='$imageUrl' id='preview' /></div>";
-			$out .= "</div>";
-			
+			$out .= "<div id='hd'>";
 			$out .= <<<FORM
-<form style='float:left;' method="POST" action="./save/?modal=1">
+<form method="POST" action="./save/?modal=1">
 	<input type="hidden" name="filename" value="{$filename}" />
 	<input type="hidden" name="field" value="{$field}" />
 	<input type="hidden" name="pages_id" value="{$pages_id}" />
@@ -65,10 +59,15 @@ class ProcessCropImage extends Process implements ConfigurableModule  {
 	<input type="hidden" id="y1" name="crop[y1]">
 	<input type="hidden" id="w" name="crop[w]">
 	<input type="hidden" id="h" name="crop[h]">
+	<input type="checkbox" checked="checked" name="show_preview" id="show_preview" /><label for="show_preview">Show preview?</label>
 	<button type="submit" class="ui-button ui-widget ui-corner-all head_button_clone ui-state-default" id="cropButton">Crop and go</button>
 </form>		
 FORM;
-			
+			$out .= "<p class='description'>Click and drag the cropped area with your cursor. Cropped image will be resized to <b>{$width}</b>x<b>{$height}</b> pixels. Under the image you see preview of what you will get.</p>";		
+			$out .= "</div>";
+	
+			$out .= "<div id='bd'><img src='$imageUrl' data-width='{$width}' data-height='{$height}' id='jcrop_target' /><div id='preview-container' style='overflow:hidden; height:{$height}px; width:{$width}px;'><img src='$imageUrl' id='preview' /></div>";
+			$out .= "</div>";
 		}
 		
 		return $out;
@@ -126,10 +125,10 @@ FORM;
 		
 		// Timestamp prevents browser cache, at least I hope so :)
 		$timestamp = time();
-		$out  = "<img src='{$targetUrl}?timestamp={$timestamp}' />";
+		$out  = "<div id='results'><img src='{$targetUrl}?timestamp={$timestamp}' />";
 		//$out .= "<ul><li><button class='ui-button ui-widget ui-corner-all head_button_clone ui-state-default' onclick=\"parent.$('.ui-dialog-content').dialog('close');\">Wow, that looks great!</button></li>";
 		$out .= "<ul><li><button class='ui-button ui-widget ui-corner-all head_button_clone ui-state-default' onclick=\"window.close();\">Wow, that looks great!</button></li>";
-		$out .= "<li><a class='modal' href='../?filename={$filename}&prefix={$prefix}&width={$targetWidth}&height={$targetHeight}&pages_id={$pages_id}&field={$field}&modal=1'>Not happy? Crop again!</a></li></ul>";
+		$out .= "<li><a class='modal' href='../?filename={$filename}&prefix={$prefix}&width={$targetWidth}&height={$targetHeight}&pages_id={$pages_id}&field={$field}&modal=1'>Not happy? Crop again!</a></li></ul></div>";
 		return $out;
 	}
 	
