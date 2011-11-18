@@ -63,7 +63,7 @@ class ProcessCropImage extends Process implements ConfigurableModule  {
 	<button type="submit" class="ui-button ui-widget ui-corner-all head_button_clone ui-state-default" id="cropButton">Crop and go</button>
 </form>		
 FORM;
-			$out .= "<p class='description'>Click and drag the cropped area with your cursor. Cropped image will be resized to <b>{$width}</b>x<b>{$height}</b> pixels. Under the image you see preview of what you will get.</p>";		
+			$out .= "<p class='description'>Click and drag the cropped area with your cursor. Cropped image will be resized to <b>{$width}</b>x<b>{$height}</b> pixels.</p>";		
 			$out .= "</div>";
 	
 			$out .= "<div id='bd'><img src='$imageUrl' data-width='{$width}' data-height='{$height}' id='jcrop_target' /><div id='preview-container' style='overflow:hidden; height:{$height}px; width:{$width}px;'><img src='$imageUrl' id='preview' /></div>";
