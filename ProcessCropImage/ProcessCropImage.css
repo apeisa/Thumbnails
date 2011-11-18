@@ -11,8 +11,14 @@ body.modal, #content {
 #hd {
 	background: white;
 	border-bottom: 1px solid #222;
-	overflow: auto;
+	overflow: hidden;
 	box-shadow: 0px 0px 6px #000;
+	position: fixed;
+	top: 0px;
+	left: 0px;
+	right: 0px;
+	height: 60px;
+	z-index: 9999;
 }
 
 #hd p {
@@ -39,16 +45,17 @@ body.modal, #content {
 #bd {
 	clear: both;
 	margin: 10px;
+	margin-top: 70px;
 	position: relative;
 }
 
 #preview-container {
-	position: absolute;
-	top: 10px;
-	right: 10px;
+	position: fixed;
+	top: 80px;
+	right: 20px;
 	border: 1px solid white;
 	box-shadow: 1px 1px 3px #000;
-	z-index: 9999;
+	z-index: 9998;
 }
 
 .hide {
