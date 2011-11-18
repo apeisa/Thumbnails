@@ -26,6 +26,9 @@ class ProcessCropImage extends Process implements ConfigurableModule  {
 	
 	public function ___execute() {
 		
+		$this->config->scripts->add($this->config->urls->ProcessCropImage . "ProcessCropImage2.js");
+		$this->config->styles->add($this->config->urls->ProcessCropImage . "ProcessCropImage2.css");
+		
 		$this->config->scripts->add($this->config->urls->ProcessCropImage . "Jcrop/js/jquery.Jcrop.min.js");
 		$this->config->styles->add($this->config->urls->ProcessCropImage . "Jcrop/css/jquery.Jcrop.css");
 		
@@ -88,9 +91,13 @@ FORM;
 		$img = $page->{$field}->get("$filename");
 		$imagePath = wire('config')->paths->files . $pages_id . "/" . $filename;
 
-		$targetPath = wire('config')->paths->files . $pages_id . "/{$prefix}_{$filename}";
-		$targetUrl = wire('config')->urls->files . $pages_id . "/{$prefix}_{$filename}";
-		
+		if (strlen($prefix) > 1) {
+			$targetPath = wire('config')->paths->files . $pages_id . "/{$prefix}_{$filename}";
+			$targetUrl = wire('config')->urls->files . $pages_id . "/{$prefix}_{$filename}";
+		} else {
+			$targetPath = $imagePath;
+			$targetUrl = wire('config')->urls->files . $pages_id . "/{$filename}";
+		}
 		$jpeg_quality = 90;
 
 		$p = pathinfo($filename); 
