@@ -1,3 +1,4 @@
+
 How to install
 ==============
 
@@ -8,3 +9,19 @@ You can modify crop setups for your site from "Image cropping tool" module under
 thumbnail,100,100
 portrait,100,150
 largethumb,200,200
+
+
+Usage on templates
+==================
+
+FieldtypeCropImage adds getThumb-method to Pageimage. getThumb returns url to the thumbnail you have asked for, ie:
+echo $page->cropImages->eq(0)->getThumb('thumbnail');
+
+If you haven't cropped that thumbnail yet, this module provides default cropping from center
+
+
+Credits
+=======
+
+Developed by Antti Peisa (twitter.com/apeisa)
+Sponsored by http://stillmovingdesign.com.au/ (thanks Martin!)
