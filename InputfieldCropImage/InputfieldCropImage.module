@@ -26,13 +26,34 @@ class InputfieldCropImage extends InputfieldImage {
 		$out = parent::renderItem($pagefile, $id, $n);
 
 		$crops = $this->modules->get('ProcessCropImage')->crops;
-		if (strlen($crops)>3) {
-			$cropUrl = "../image-crop/";
-			$cropStr = "\n\t\t\t<div class='ui-widget-content crops'><p class='description'>Thumbnails (hover to preview, click to crop)</p>". $this->_getCropLinks($crops, $cropUrl, $pagefile) . "</div></li>";
+		if (strlen($crops) > 3) {
+			// If we've defined one or more templates for specific crops, we need to check the current page's template to see if we actually have any applicable crops to show to the user
+			$page = $this->pages->get($this->input->get->id);
+			$applicableCrops = array();
+			$cropArray = explode("\n", strtolower($crops));
+			foreach ($cropArray as $k => $v) {
+				$cropItems = explode(',', trim($v));
+				if (count($cropItems) > 3) {
+					$cropTemplates = array_slice($cropItems, 3);
+					if (in_array($page->template, $cropTemplates)) {
+						$applicableCrops[] = $cropArray[$k];
+					}
+				} else { // Any non-template-specific crops are automatically added to the list for all cropimage fields
+					$applicableCrops[] = $cropArray[$k];
+				}
+			}
+			$applicableCrops = implode("\n", $applicableCrops);
+			
+			if (!empty($applicableCrops)) {
+				$cropLinks = $this->_getCropLinks($crops, $cropUrl, $pagefile);
+				if (!empty($cropLinks)) {
+					$cropUrl = "../image-crop/";
+					$cropStr = "\n\t\t\t<div class='ui-widget-content crops'><p class='description'>Thumbnails (hover to preview, click to crop)</p>". $this->_getCropLinks($applicableCrops, $cropUrl, $pagefile) . "</div>";
+					// We add our crop string at the end of the list item that holds image
+					$out .= $cropStr;
+				}
+			}
 		}
-		
-		// We add our crop string at the end of the list item that holds image
-		$out = str_ireplace('</li>', $cropStr, $out);
 
 		return $out; 
 	}
