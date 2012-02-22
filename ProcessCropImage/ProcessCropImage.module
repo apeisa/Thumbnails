@@ -9,7 +9,8 @@ class ProcessCropImage extends Process implements ConfigurableModule  {
 			'version' => 100,
 			'permanent' => false,
 			'autoload' => false,
-			'singular' => true
+			'singular' => true,
+			'permission' => "image-crop"
 		);
 	}
 	
@@ -196,12 +197,20 @@ FORM;
 		$p->name = 'image-crop';
 		$p->process = $this;
 		$p->save();
+		
+		$p = new Permission();
+		$p->name = 'image-crop';
+		$p->title = 'Allow cropping for images';
+		$p->save();
 	}
 	
 	public function ___uninstall() {
 		parent::___uninstall();
 		
-		$imageCrop = $this->pages->get(3)->children()->get('name=image-crop');
-		$imageCrop->delete();
+		$p = $this->pages->get(3)->children()->get('name=image-crop');
+		if ($p->id) $p->delete();
+		
+		$p = $this->permissions->get('image-crop');
+		if ($p->id) $p->delete();
 	}
 }

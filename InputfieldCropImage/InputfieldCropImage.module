@@ -24,6 +24,8 @@ class InputfieldCropImage extends InputfieldImage {
 	protected function renderItem($pagefile, $id, $n) {
 		
 		$out = parent::renderItem($pagefile, $id, $n);
+		
+		if (!$this->user->hasPermission($this->permissions->get('image-crop'))) return $out;
 
 		$crops = $this->modules->get('ProcessCropImage')->crops;
 		if (strlen($crops) > 3) {
@@ -43,11 +45,10 @@ class InputfieldCropImage extends InputfieldImage {
 				}
 			}
 			$applicableCrops = implode("\n", $applicableCrops);
-			
+			$cropUrl = "../image-crop/";
 			if (!empty($applicableCrops)) {
 				$cropLinks = $this->_getCropLinks($crops, $cropUrl, $pagefile);
 				if (!empty($cropLinks)) {
-					$cropUrl = "../image-crop/";
 					$cropStr = "\n\t\t\t<div class='ui-widget-content crops'><p class='description'>Thumbnails (hover to preview, click to crop)</p>". $this->_getCropLinks($applicableCrops, $cropUrl, $pagefile) . "</div>";
 					// We add our crop string at the end of the list item that holds image
 					$out .= $cropStr;
