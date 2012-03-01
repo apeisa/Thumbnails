@@ -10,7 +10,7 @@ class ProcessCropImage extends Process implements ConfigurableModule  {
 			'permanent' => false,
 			'autoload' => false,
 			'singular' => true,
-			'permission' => "image-crop"
+			'permission' => "page-edit"
 		);
 	}
 	
@@ -196,11 +196,6 @@ FORM;
 		$p->title = 'Image crop';
 		$p->name = 'image-crop';
 		$p->process = $this;
-		$p->save();
-		
-		$p = new Permission();
-		$p->name = 'image-crop';
-		$p->title = 'Allow cropping for images';
 		$p->save();
 	}
 	
