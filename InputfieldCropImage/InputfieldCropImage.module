@@ -24,8 +24,6 @@ class InputfieldCropImage extends InputfieldImage {
 	protected function renderItem($pagefile, $id, $n) {
 		
 		$out = parent::renderItem($pagefile, $id, $n);
-		
-		if (!$this->user->hasPermission($this->permissions->get('image-crop'))) return $out;
 
 		$crops = $this->modules->get('ProcessCropImage')->crops;
 		if (strlen($crops) > 3) {
