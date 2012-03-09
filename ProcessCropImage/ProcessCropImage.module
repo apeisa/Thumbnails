@@ -4,7 +4,7 @@ class ProcessCropImage extends Process implements ConfigurableModule  {
 	public static function getModuleInfo() {
 		return array(
 			'title' => 'Image cropping tool',
-			'summary' => 'Crop thumbnails (this is where you edit your crop setups)',
+			'summary' => 'Crop thumbnails (Configuration Settings moved to CropImage field settings).',
 			'href' => 'http://processwire.com/talk/index.php/topic,705.0.html',
 			'version' => 100,
 			'permanent' => false,
@@ -172,7 +172,8 @@ FORM;
 		$f->attr('checked', empty($data['cropOriginal']) ? '' : 'checked');
 		$fields->append($f);
 		*/
-
+		
+		/* OLD CONFIGURATION 
 		$f = $modules->get('InputfieldTextarea');
 		$f->attr('name', 'crops'); 
 		$f->attr('rows', 5);
@@ -180,7 +181,7 @@ FORM;
 		$f->label = 'Crop setups';
 		$f->description = 'Enter all crop dimensions, one on each line and in this format: name,width,height. Few examples: "thumbnail,200,200" or "portrait,200,600"'; 
 		$fields->append($f);
-		
+		*/
 		return $fields;
 	}
 	

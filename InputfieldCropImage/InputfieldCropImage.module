@@ -13,6 +13,9 @@ class InputfieldCropImage extends InputfieldImage {
 
 	public function init() {
 		parent::init();
+		
+		//default settings
+		$this->set('thumbSetting', 'thumbnail,100,100'); 
 	}
 	
 	public function ___render() {
@@ -25,7 +28,9 @@ class InputfieldCropImage extends InputfieldImage {
 		
 		$out = parent::renderItem($pagefile, $id, $n);
 
-		$crops = $this->modules->get('ProcessCropImage')->crops;
+		
+		$crops = $this->thumbSetting;
+
 		if (strlen($crops) > 3) {
 			// If we've defined one or more templates for specific crops, we need to check the current page's template to see if we actually have any applicable crops to show to the user
 			$page = $this->pages->get($this->input->get->id);
@@ -44,8 +49,10 @@ class InputfieldCropImage extends InputfieldImage {
 			}
 			$applicableCrops = implode("\n", $applicableCrops);
 			$cropUrl = "../image-crop/";
+			
 			if (!empty($applicableCrops)) {
 				$cropLinks = $this->_getCropLinks($crops, $cropUrl, $pagefile);
+				
 				if (!empty($cropLinks)) {
 					$cropStr = "\n\t\t\t<div class='ui-widget-content crops'><p class='description'>Thumbnails (hover to preview, click to crop)</p>". $this->_getCropLinks($applicableCrops, $cropUrl, $pagefile) . "</div>";
 					// We add our crop string at the end of the list item that holds image
@@ -75,6 +82,41 @@ class InputfieldCropImage extends InputfieldImage {
 		if ($this->modules->get('ProcessCropImage')->cropOriginal) {
 			$out .= "<a target='_blank' data-thumburl='{$thumbUrl}' class='cropOriginal' href='$cropUrl?filename={$pagefile->basename}&pages_id={$this->input->get->id}&field={$this->name}&modal=1'>ORIGINAL</a>";
 		}
+		
+	
+		
 		return $out;
 	}
+	
+
+	
+
+	public function ___getConfigInputfields() {
+
+		$inputfields = parent::___getConfigInputfields();
+	
+	
+		/*
+		$fieldset = $this->modules->get('InputfieldFieldset');
+		$fieldset->label = $this->_("Thumbnails Settings");
+		$fieldset->collapsed = $this->maxWidth || $this->maxHeight ? Inputfield::collapsedNo : Inputfield::collapsedYes; 
+		$fieldset->description = $this->_('Enter all crop dimensions, one on each line and in this format: name,width,height. Few examples: "thumbnail,200,200" or "portrait,200,600"'); 
+		*/
+		
+		
+		$field = $this->modules->get("InputfieldTextarea"); 
+		$field->attr('name', 'thumbSetting'); 
+		$field->attr('value', (string) $this->thumbSetting ); 
+		$field->label = $this->_("Thumbnail Settings"); 
+		$field->description = $this->_('Enter all crop dimensions, one on each line in this format: name,width,height. Few examples: "thumbnail,200,200" or "portrait,200,600". Optionally, you can limit the visibility of the thumbnails to the selected template, giving as the last parameter, the name of the template. Example: "thumbnail,200,200,base-page,home"'); 
+		
+		//$fieldset->add($field); 
+
+		$inputfields->add($field); 
+		
+		return $inputfields; 	
+	}
+	
+	
+	
 }
