@@ -18,8 +18,24 @@ class FieldtypeCropImage extends FieldtypeImage {
 				$thumbFound = false;
                 $thumb = $event->arguments[0];
 
-                $crops = wire('modules')->get('ProcessCropImage')->crops;
 
+				
+		
+				// return InputfieldCropImage or null if not found
+				$inputFieldInstance = $this->_getInputFieldInstance($event);
+				
+				if(!$inputFieldInstance) 
+					return true;
+					
+				// read crop settings from InputfieldCropImage
+				$crops = $inputFieldInstance->thumbSetting;
+				
+				// and we continue...
+
+				
+				
+				
+				
 				$crops_a = explode("\n", $crops); // ie. thumbname,200,200 (name,width,height)
 
 				foreach($crops_a as $crop) {
@@ -67,6 +83,46 @@ class FieldtypeCropImage extends FieldtypeImage {
                 }
 				return true;
         }
+
+		
+			
+		public function _getInputFieldInstance(HookEvent $event) {
+
+		
+			$field = null; // where we'll keep the field we're looking for
+			$image = $event->object;
+			$page = $image->page; 
+			$action = $event->arguments[0]; 
+
+			// find all fields of type FieldtypeImage that are part of the page we're using
+			$imageFields = $page->fields->find('type=FieldtypeCropImage');
+	
+			// loop through to find the one we're looking for
+			foreach($imageFields as $imageField) {
+
+				// good to get unformatted in case it's a single image field, 
+				// because it'll still be an array rather than 1 image
+				$pagefiles = $page->getUnformatted($imageField->name);
+				
+
+				// if the image's pagefiles property matches the one with the 
+				// field we're looking at, we have a match. save in $field
+				if($image->pagefiles === $pagefiles) {
+					$field = $imageField;
+					break;
+				}
+			}
+
+			if($field) {
+				//$event->return = $out;
+				return $field;
+			}
+			
+			return null;
+		}
+				
+		
+		
 		
 		public function install() {
 			parent::___install();

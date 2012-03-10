@@ -4,11 +4,11 @@ How to install
 
 Just add files and folders to your site/modules/ folder and install one of the modules (it installs others). After that create new field or edit existing image field and make it use fieldtype "CropImage".
 
-You can modify crop setups for your site from "Image cropping tool" module under Process. Put each of the setups on their own line, like this:
+You can change the settings for each field in the Setup->Files->CropImageField Input tab:
 
 thumbnail,100,100
 portrait,100,150
-largethumb,200,200
+largethumb,200,200,basic-page,home
 
 
 Usage on templates
