@@ -36,6 +36,4 @@ function showCoords(c)
 	$('#y1').val(c.y);
 	$('#w').val(c.w);
 	$('#h').val(c.h);
-	
-	console.log($('#w').val());
 };
