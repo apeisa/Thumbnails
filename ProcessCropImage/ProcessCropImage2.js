@@ -6,7 +6,9 @@ $(function(){
 		$crop.Jcrop({
 			onChange: showCoords,
 			onSelect: showCoords,
-			aspectRatio: w/h
+			aspectRatio: w/h,
+			boxWidth: screen.width - 100,
+   			boxHeight: screen.height - 100
 		});
 	}
 	$('#show_preview').click(function(){
