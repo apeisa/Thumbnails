@@ -95,7 +95,7 @@ class FieldtypeCropImage extends FieldtypeImage {
 			$action = $event->arguments[0]; 
 
 			// find all fields of type FieldtypeImage that are part of the page we're using
-			$imageFields = $page->fields->find('type=FieldtypeCropImage');
+			$imageFields = $page->fields->find('type=FieldtypeImage');
 	
 			// loop through to find the one we're looking for
 			foreach($imageFields as $imageField) {
