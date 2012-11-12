@@ -37,9 +37,16 @@ class ProcessCropImage extends Process implements ConfigurableModule  {
 		
 		$this->setFuel('processHeadline', 'Crop images');
 		
-		$pages_id = (int) $this->input->get->pages_id;
-		$filename = $this->input->get->filename;
 		$field = $this->input->get->field;
+
+		if (preg_match("/_repeater[0-9]+$/", $field)) {
+			$pages_id = (int) end(explode("_repeater", $field));
+			$field = str_replace("_repeater$pages_id", "", $field);
+		} else {
+			$pages_id = (int) $this->input->get->pages_id;
+		}
+
+		$filename = $this->input->get->filename;
 		$height = $this->input->get->height;
 		$width = $this->input->get->width;
 		$prefix = $this->input->get->prefix;
