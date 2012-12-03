@@ -6,7 +6,7 @@ class ProcessCropImage extends Process implements ConfigurableModule  {
 			'title' => 'Image cropping tool',
 			'summary' => 'Crop thumbnails (Configuration Settings moved to CropImage field settings).',
 			'href' => 'http://processwire.com/talk/index.php/topic,705.0.html',
-			'version' => 100,
+			'version' => 101,
 			'permanent' => false,
 			'autoload' => false,
 			'singular' => true,
@@ -37,7 +37,7 @@ class ProcessCropImage extends Process implements ConfigurableModule  {
 		
 		$this->setFuel('processHeadline', 'Crop images');
 		
-		$field = $this->input->get->field;
+		$field = wire('sanitizer')->fieldName($this->input->get->field);
 
 		if (preg_match("/_repeater[0-9]+$/", $field)) {
 			$pages_id = (int) end(explode("_repeater", $field));
@@ -46,16 +46,20 @@ class ProcessCropImage extends Process implements ConfigurableModule  {
 			$pages_id = (int) $this->input->get->pages_id;
 		}
 
-		$filename = $this->input->get->filename;
-		$height = $this->input->get->height;
-		$width = $this->input->get->width;
-		$prefix = $this->input->get->prefix;
-		
+		$filename = wire('sanitizer')->name($this->input->get->filename);
+		$height = (int) $this->input->get->height;
+		$width = (int) $this->input->get->width;
+		$prefix = wire('sanitizer')->name($this->input->get->prefix);
+	
 		if ($pages_id < 0 || strlen($filename) < 3) {
 			$out = "<p class='description'>This page only works when you come from image field.</p>";
 		} else {
-			$img = wire('pages')->get($pages_id)->{$field}->get("$filename");
-			//$imageUrl = $this->config->urls->files . $pages_id . "/" . $filename;
+			$page = wire('pages')->get($pages_id); 
+			if(!$page->editable()) throw new WirePermissionException('Not Editable');
+			$fieldValue = $page->get($field); 
+			if(!$fieldValue || !$fieldValue instanceof Pageimages) throw new WireException("Invalid field"); 
+			$img = $fieldValue->get("$filename");
+			if(!$img) throw new WireException("Invalid file"); 
 			$imageUrl = $img->url;
 			$out = '';
 			
@@ -88,33 +92,41 @@ FORM;
 	}
 	
 	public function ___executeSave() {
-		
+	
 		$this->config->styles->add($this->config->urls->ProcessCropImage . "ProcessCropImage2.css");
 		
 		$pages_id = (int) $this->input->post->pages_id;
-		$filename = $this->input->post->filename;
-		$field = $this->input->post->field;
+		$filename = wire('sanitizer')->name($this->input->post->filename);
+		$field = wire('sanitizer')->fieldName($this->input->post->field);
 		$crop = $this->input->post->crop;
-		$prefix = $this->input->post->prefix;
-		$targetWidth = $this->input->post->width;
-		$targetHeight = $this->input->post->height;
+		if(!is_array($crop)) throw new WireException("Invalid crop value"); 
+		foreach($crop as $k => $v) $crop[$k] = (int) $v; 
+		$prefix = wire('sanitizer')->name($this->input->post->prefix);
+		$targetWidth = (int) $this->input->post->width;
+		$targetHeight = (int) $this->input->post->height;
 		
 		if (!$prefix) {
-			$targetHeight = $crop['h'];
-			$targetWidth = $crop['w'];
+			$targetHeight = (int) $crop['h'];
+			$targetWidth = (int) $crop['w'];
 		}
 
 		$page = wire('pages')->get($pages_id);
+		if(!$page->id) throw new WireException("Invalid page"); 
+		if(!$page->editable()) throw new WirePermissionException("Not Editable");
 
-		$img = $page->{$field}->get("$filename");
-		$imagePath = wire('config')->paths->files . $pages_id . "/" . $filename;
+		$fieldValue = $page->get($field); 
+		if(!$fieldValue || !$fieldValue instanceof Pagefiles) throw new WireException("Invalid field"); 
+
+		$img = $fieldValue->get("$filename");
+		if(!$img) throw new WireException("Invalid filename"); 
+		$imagePath = $img->filename();
 
 		if (strlen($prefix) > 1) {
-			$targetPath = wire('config')->paths->files . $pages_id . "/{$prefix}_{$filename}";
-			$targetUrl = wire('config')->urls->files . $pages_id . "/{$prefix}_{$filename}";
+			$targetPath = $fieldValue->path() . $prefix . '_' . $filename; 
+			$targetUrl = $fieldValue->url() . $prefix . '_' . $filename;
 		} else {
 			$targetPath = $imagePath;
-			$targetUrl = wire('config')->urls->files . $pages_id . "/{$filename}";
+			$targetUrl = $img->url();
 		}
 		$jpeg_quality = 90;
 

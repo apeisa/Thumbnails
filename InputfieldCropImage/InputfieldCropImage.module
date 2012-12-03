@@ -5,7 +5,7 @@ class InputfieldCropImage extends InputfieldImage {
 	public static function getModuleInfo() {
 		return array(
 			'title' => 'Images with cropping',
-			'version' => 100,
+			'version' => 101,
 			'summary' => 'Regular images with cropping',
 			'permanent' => false, 
 			);
@@ -33,7 +33,8 @@ class InputfieldCropImage extends InputfieldImage {
 
 		if (strlen($crops) > 3) {
 			// If we've defined one or more templates for specific crops, we need to check the current page's template to see if we actually have any applicable crops to show to the user
-			$page = $this->pages->get($this->input->get->id);
+			$page = $this->pages->get((int) $this->input->get->id);
+			if(!$page->id || !$page->editable()) throw new WirePermissionException();
 			$applicableCrops = array();
 			$cropArray = explode("\n", strtolower($crops));
 			foreach ($cropArray as $k => $v) {
@@ -77,10 +78,10 @@ class InputfieldCropImage extends InputfieldImage {
 			$crop = explode(",", $crop);
 			$prefix = $this->sanitizer->name($crop[0]);
 			$thumbUrl = $pagefile->getThumb($prefix, $this->name);
-			$out .= "<a target='_blank' data-thumburl='{$thumbUrl}' class='crop' href='$cropUrl?filename={$pagefile->basename}&prefix={$prefix}&width={$crop[1]}&height={$crop[2]}&pages_id={$this->input->get->id}&field={$this->name}&modal=1'>$crop[0]</a>";
+			$out .= "<a target='_blank' data-thumburl='{$thumbUrl}' class='crop' href='$cropUrl?filename={$pagefile->basename}&prefix={$prefix}&width={$crop[1]}&height={$crop[2]}&pages_id=" . ((int) $this->input->get->id) . "&field={$this->name}&modal=1'>$crop[0]</a>";
 		}
 		if ($this->modules->get('ProcessCropImage')->cropOriginal) {
-			$out .= "<a target='_blank' data-thumburl='{$thumbUrl}' class='cropOriginal' href='$cropUrl?filename={$pagefile->basename}&pages_id={$this->input->get->id}&field={$this->name}&modal=1'>ORIGINAL</a>";
+			$out .= "<a target='_blank' data-thumburl='{$thumbUrl}' class='cropOriginal' href='$cropUrl?filename={$pagefile->basename}&pages_id=" . ((int) $this->input->get->id) . "&field={$this->name}&modal=1'>ORIGINAL</a>";
 		}
 		
 	
