@@ -3,8 +3,8 @@ class ProcessCropImage extends Process implements ConfigurableModule  {
 
 	public static function getModuleInfo() {
 		return array(
-			'title' => 'Image cropping tool',
-			'summary' => 'Crop thumbnails (Configuration Settings moved to CropImage field settings).',
+			'title' => __('Image cropping tool', __FILE__), // Module Title
+			'summary' => __('Crop thumbnails (Configuration Settings moved to CropImage field settings).', __FILE__), // Module Summary
 			'href' => 'http://processwire.com/talk/index.php/topic,705.0.html',
 			'version' => 101,
 			'permanent' => false,
@@ -52,7 +52,7 @@ class ProcessCropImage extends Process implements ConfigurableModule  {
 		$prefix = wire('sanitizer')->name($this->input->get->prefix);
 	
 		if ($pages_id < 0 || strlen($filename) < 3) {
-			$out = "<p class='description'>This page only works when you come from image field.</p>";
+			$out = "<p class='description'>" . $this->_("This page only works when you come from image field.") . "</p>";
 		} else {
 			$page = wire('pages')->get($pages_id); 
 			if(!$page->editable()) throw new WirePermissionException('Not Editable');
@@ -64,6 +64,8 @@ class ProcessCropImage extends Process implements ConfigurableModule  {
 			$out = '';
 			
 			$out .= "<div id='hd'>";
+			$showPreview = $this->_("Show preview?");
+			$cropAndGo = $this->_("Crop and go");
 			$out .= <<<FORM
 <form method="POST" action="./save/?modal=1">
 	<input type="hidden" name="filename" value="{$filename}" />
@@ -76,11 +78,11 @@ class ProcessCropImage extends Process implements ConfigurableModule  {
 	<input type="hidden" id="y1" name="crop[y1]">
 	<input type="hidden" id="w" name="crop[w]">
 	<input type="hidden" id="h" name="crop[h]">
-	<input type="checkbox" checked="checked" name="show_preview" id="show_preview" /><label for="show_preview">Show preview?</label>
-	<button type="submit" class="ui-button ui-widget ui-corner-all head_button_clone ui-state-default" id="cropButton">Crop and go</button>
+	<input type="checkbox" checked="checked" name="show_preview" id="show_preview" /><label for="show_preview">{$showPreview}</label>
+	<button type="submit" class="ui-button ui-widget ui-corner-all head_button_clone ui-state-default" id="cropButton">{$cropAndGo}</button>
 </form>		
 FORM;
-			$out .= "<p class='description'>Click and drag the cropped area with your cursor. Cropped image will be resized to <b>{$width}</b>x<b>{$height}</b> pixels.</p>";		
+			$out .= "<p class='description'>" . sprintf($this->_('Click and drag the cropped area with your cursor. Cropped image will be resized to %s pixels'), '<b>' . $width . '</b>x<b>' . $height . '</b>') . "</p>";		
 			$out .= "</div>";
 	
 			$out .= "<div id='bd'><img src='$imageUrl' data-width='{$width}' data-height='{$height}' id='jcrop_target' />";
@@ -164,8 +166,8 @@ FORM;
 		$timestamp = time();
 		$out  = "<div id='results'><img src='{$targetUrl}?timestamp={$timestamp}' />";
 		//$out .= "<ul><li><button class='ui-button ui-widget ui-corner-all head_button_clone ui-state-default' onclick=\"parent.$('.ui-dialog-content').dialog('close');\">Wow, that looks great!</button></li>";
-		$out .= "<ul><li><button class='ui-button ui-widget ui-corner-all head_button_clone ui-state-default' onclick=\"window.close();\">Wow, that looks great!</button></li>";
-		if ($prefix) $out .= "<li><a class='modal' href='../?filename={$filename}&prefix={$prefix}&width={$targetWidth}&height={$targetHeight}&pages_id={$pages_id}&field={$field}&modal=1'>Not happy? Crop again!</a></li>";
+		$out .= "<ul><li><button class='ui-button ui-widget ui-corner-all head_button_clone ui-state-default' onclick=\"window.close();\">" . $this->_("Wow, that looks great!") . "</button></li>";
+		if ($prefix) $out .= "<li><a class='modal' href='../?filename={$filename}&prefix={$prefix}&width={$targetWidth}&height={$targetHeight}&pages_id={$pages_id}&field={$field}&modal=1'>" . $this->_("Not happy? Crop again!") . "</a></li>";
 		$out .= "</ul></div>";
 		return $out;
 	}

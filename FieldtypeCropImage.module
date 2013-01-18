@@ -3,9 +3,9 @@ class FieldtypeCropImage extends FieldtypeImage {
 
         public static function getModuleInfo() {
                 return array(
-                        'title' => 'Images with cropping',
+                        'title' => __('Images with cropping', __FILE__), // Module Title
+                        'summary' => __('Field that stores one or more GIF, JPG, or PNG images', __FILE__), // Module summary
                         'version' => 101,
-                        'summary' => 'Field that stores one or more GIF, JPG, or PNG images',
                         );
         }
 
@@ -35,7 +35,7 @@ class FieldtypeCropImage extends FieldtypeImage {
 			$cropFilename = $images->path() . $name . '_' . $image->basename;
 			if(is_file($cropFilename)) {
 				unlink($cropFilename); 
-				$this->message("Removed crop: " . basename($cropFilename), Notice::debug); 
+				$this->message($this->_("Removed crop") . ': ' . basename($cropFilename), Notice::debug); 
 			}
 			
 		}
@@ -69,12 +69,12 @@ class FieldtypeCropImage extends FieldtypeImage {
 		}
 		
 		if ($thumbFound === false) {
-			throw new WireException("There is no thumb called: $thumb"); 
+			throw new WireException(sprintf($this->_("There is no thumb called: %s"), $thumb)); 
 			return;
 		}
 		
 		if ($this->w < 1 || $this->h < 1) {
-			throw new WireException("Width and/or height not found for thumb: $thumb"); 
+			throw new WireException(sprintf($this->_("Width and/or height not found for thumb: %s"), $thumb));
 			return;
 		}				
 
