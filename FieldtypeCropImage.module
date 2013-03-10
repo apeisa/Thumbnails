@@ -5,7 +5,7 @@ class FieldtypeCropImage extends FieldtypeImage {
                 return array(
                         'title' => __('Images with cropping', __FILE__), // Module Title
                         'summary' => __('Field that stores one or more GIF, JPG, or PNG images', __FILE__), // Module summary
-                        'version' => 101,
+                        'version' => 102,
                         );
         }
 
