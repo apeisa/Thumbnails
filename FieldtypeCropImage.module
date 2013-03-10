@@ -132,7 +132,7 @@ class FieldtypeCropImage extends FieldtypeImage {
 			// if the image's pagefiles property matches the one with the 
 			// field we're looking at, we have a match. save in $field
 			if($image->pagefiles === $pagefiles) {
-				$field = $imageField;
+				$field = $imageField->getInputfield($page);
 				break;
 			}
 		}
