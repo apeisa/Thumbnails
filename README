@@ -1,4 +1,3 @@
-
 How to install
 ==============
 
@@ -15,7 +14,7 @@ Usage on templates
 ==================
 
 FieldtypeCropImage adds getThumb-method to Pageimage. getThumb returns url to the thumbnail you have asked for, ie:
-echo $page->cropImages->eq(0)->getThumb('thumbnail');
+echo $page->images->eq(0)->getThumb('thumbnail');
 
 If you haven't cropped that thumbnail yet, this module provides default cropping from center
 
