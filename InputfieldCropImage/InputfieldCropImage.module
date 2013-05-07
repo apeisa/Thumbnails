@@ -49,7 +49,7 @@ class InputfieldCropImage extends InputfieldImage {
 				}
 			}
 			$applicableCrops = implode("\n", $applicableCrops);
-			$cropUrl = "../image-crop/";
+			$cropUrl = $this->config->urls->admin."page/image-crop/";
 			
 			if (!empty($applicableCrops)) {
 				$cropLinks = $this->_getCropLinks($crops, $cropUrl, $pagefile);
