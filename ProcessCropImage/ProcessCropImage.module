@@ -10,33 +10,58 @@ class ProcessCropImage extends Process implements ConfigurableModule  {
 			'permanent' => false,
 			'autoload' => false,
 			'singular' => true,
-			'permission' => "page-edit"
+			'permission' => "page-edit",
+			'requires' => "PageImageManipulator",
+			'installs' => "PageImageManipulator"
 		);
 	}
-	
+
 	static public function getDefaultData() {
 	   return array(
 		   'crops' => 'thumbnail,100,100',
 		   'cropOriginal' => 0
 		   );
 	}
-	
+
 	public function __construct() {
 	   foreach(self::getDefaultData() as $key => $value) {
 		   $this->$key = $value;
 	   }
 	}
-	
+
+// horst >>
+	private function getCropImageOptions() {
+		$defaultOptions = array(
+			'autoRotation' => true,
+			'upscaling' => true,
+			'cropping' => true,
+			'quality' => 90,
+			'sharpening' => 'soft',
+			'bgcolor' => 127,
+			'targetFilename' => null,
+			'outputFormat' => null
+		);
+		$configOptions1 = wire('config')->imageSizerOptions;
+		if(!is_array($configOptions1)) $configOptions1 = array();
+		$configOptions2 = wire('config')->imageManipulatorOptions;
+		if(!is_array($configOptions2)) $configOptions2 = array();
+		$sessionOptions = wire('session')->cropImageOptions;
+		if(!is_array($sessionOptions)) $sessionOptions = array();
+
+		return array_merge($defaultOptions, $configOptions1, $configOptions2, $sessionOptions);
+	}
+// << horst
+
 	public function ___execute() {
-		
+
 		$this->config->scripts->add($this->config->urls->ProcessCropImage . "ProcessCropImage2.js");
 		$this->config->styles->add($this->config->urls->ProcessCropImage . "ProcessCropImage2.css");
-		
+
 		$this->config->scripts->add($this->config->urls->ProcessCropImage . "Jcrop/js/jquery.Jcrop.min.js");
 		$this->config->styles->add($this->config->urls->ProcessCropImage . "Jcrop/css/jquery.Jcrop.css");
-		
+
 		$this->setFuel('processHeadline', 'Crop images');
-		
+
 		$field = wire('sanitizer')->fieldName($this->input->get->field);
 
 		if (preg_match("/_repeater[0-9]+$/", $field)) {
@@ -50,19 +75,27 @@ class ProcessCropImage extends Process implements ConfigurableModule  {
 		$height = (int) $this->input->get->height;
 		$width = (int) $this->input->get->width;
 		$prefix = wire('sanitizer')->name($this->input->get->prefix);
-	
+// horst >>
+		$w  = isset($this->input->get->w) ? intval($this->input->get->w) : 0;
+		$h  = isset($this->input->get->h) ? intval($this->input->get->h) : 0;
+		$x1 = isset($this->input->get->x1) ? intval($this->input->get->x1) : 0;
+		$y1 = isset($this->input->get->y1) ? intval($this->input->get->y1) : 0;
+// << horst
+
 		if ($pages_id < 0 || strlen($filename) < 3) {
 			$out = "<p class='description'>" . $this->_("This page only works when you come from image field.") . "</p>";
 		} else {
-			$page = wire('pages')->get($pages_id); 
+			$page = wire('pages')->get($pages_id);
 			if(!$page->editable()) throw new WirePermissionException('Not Editable');
-			$fieldValue = $page->get($field); 
-			if(!$fieldValue || !$fieldValue instanceof Pageimages) throw new WireException("Invalid field"); 
+			$fieldValue = $page->get($field);
+			if(!$fieldValue || !$fieldValue instanceof Pageimages) throw new WireException("Invalid field");
 			$img = $fieldValue->get("$filename");
-			if(!$img) throw new WireException("Invalid file"); 
+			if(!$img) throw new WireException("Invalid file");
 			$imageUrl = $img->url;
+// horst >>
+			$options = $this->getCropImageOptions();
+// << horst
 			$out = '';
-			
 			$out .= "<div id='hd'>";
 			$showPreview = $this->_("Show preview?");
 			$cropAndGo = $this->_("Crop and go");
@@ -74,115 +107,128 @@ class ProcessCropImage extends Process implements ConfigurableModule  {
 	<input type="hidden" name="width" value="{$width}" />
 	<input type="hidden" name="height" value="{$height}" />
 	<input type="hidden" name="prefix" value="{$prefix}" />
-	<input type="hidden" id="x1" name="crop[x1]">
-	<input type="hidden" id="y1" name="crop[y1]">
-	<input type="hidden" id="w" name="crop[w]">
-	<input type="hidden" id="h" name="crop[h]">
-	<input type="checkbox" checked="checked" name="show_preview" id="show_preview" /><label for="show_preview">{$showPreview}</label>
+	<input type="hidden" id="x1" name="crop[x1]" value="{$x1}">
+	<input type="hidden" id="y1" name="crop[y1]" value="{$y1}">
+	<input type="hidden" id="w" name="crop[w]" value="{$w}">
+	<input type="hidden" id="h" name="crop[h]" value="{$h}">
+	<label for="sharpen">sharpen</label>
+	<select name="sharpen">
+	  <option selected>{$options['sharpening']}</option>
+	  <option>multistep</option>
+	  <option>soft</option>
+	  <option>medium</option>
+	  <option>strong</option>
+	</select>
+	<label for="quality">quality</label>
+	<select name="quality">
+	  <option selected>{$options['quality']}</option>
+	  <option>100</option>
+	  <option>97</option>
+	  <option>94</option>
+	  <option>92</option>
+	  <option>90</option>
+	  <option>87</option>
+	  <option>84</option>
+	  <option>80</option>
+	  <option>75</option>
+	  <option>70</option>
+	  <option>65</option>
+	  <option>60</option>
+	  <option>55</option>
+	  <option>50</option>
+	</select>
 	<button type="submit" class="ui-button ui-widget ui-corner-all head_button_clone ui-state-default" id="cropButton">{$cropAndGo}</button>
-</form>		
+	<br><label for="show_preview">{$showPreview} </label> <input type="checkbox" checked="checked" name="show_preview" id="show_preview">
+</form>
 FORM;
-			$out .= "<p class='description'>" . sprintf($this->_('Click and drag the cropped area with your cursor. Cropped image will be resized to %s pixels'), '<b>' . $width . '</b>x<b>' . $height . '</b>') . "</p>";		
+			$out .= "<p class='description'>" . sprintf($this->_('Click and drag the cropped area with your cursor. Cropped image will be resized to %s pixels'), '<b>' . $width . '</b>x<b>' . $height . '</b>') . "</p>";
 			$out .= "</div>";
-	
+
 			$out .= "<div id='bd'><img src='$imageUrl' data-width='{$width}' data-height='{$height}' id='jcrop_target' />";
 			if ($width) $out .= "<div id='preview-container' style='overflow:hidden; height:{$height}px; width:{$width}px;'><img src='$imageUrl' id='preview' /></div>";
 			$out .= "</div>";
 		}
-		
+
 		return $out;
 	}
-	
+
 	public function ___executeSave() {
-	
+
 		$this->config->styles->add($this->config->urls->ProcessCropImage . "ProcessCropImage2.css");
-		
+
 		$pages_id = (int) $this->input->post->pages_id;
 		$filename = wire('sanitizer')->name($this->input->post->filename);
 		$field = wire('sanitizer')->fieldName($this->input->post->field);
 		$crop = $this->input->post->crop;
-		if(!is_array($crop)) throw new WireException("Invalid crop value"); 
-		foreach($crop as $k => $v) $crop[$k] = (int) $v; 
+		if(!is_array($crop)) throw new WireException("Invalid crop value");
+		foreach($crop as $k => $v) $crop[$k] = (int) $v;
 		$prefix = wire('sanitizer')->name($this->input->post->prefix);
 		$targetWidth = (int) $this->input->post->width;
 		$targetHeight = (int) $this->input->post->height;
-		
+// horst >>
+		$sharpening = in_array($this->input->post->sharpen, array('multistep','soft','medium','strong')) ? $this->input->post->sharpen : 'medium';
+		$quality = intval($this->input->post->quality);
+		$quality = $quality>0 && $quality<=100 ? $quality : 90;
+		wire('session')->cropImageOptions = array('quality'=>$quality, 'sharpening'=>$sharpening);
+// << horst
+
 		if (!$prefix) {
 			$targetHeight = (int) $crop['h'];
 			$targetWidth = (int) $crop['w'];
 		}
 
 		$page = wire('pages')->get($pages_id);
-		if(!$page->id) throw new WireException("Invalid page"); 
+		if(!$page->id) throw new WireException("Invalid page");
 		if(!$page->editable()) throw new WirePermissionException("Not Editable");
 
-		$fieldValue = $page->get($field); 
-		if(!$fieldValue || !$fieldValue instanceof Pagefiles) throw new WireException("Invalid field"); 
+		$fieldValue = $page->get($field);
+		if(!$fieldValue || !$fieldValue instanceof Pagefiles) throw new WireException("Invalid field");
 
 		$img = $fieldValue->get("$filename");
-		if(!$img) throw new WireException("Invalid filename"); 
+		if(!$img) throw new WireException("Invalid filename");
 		$imagePath = $img->filename();
 
 		if (strlen($prefix) > 1) {
-			$targetPath = $fieldValue->path() . $prefix . '_' . $filename; 
+			$targetPath = $fieldValue->path() . $prefix . '_' . $filename;
 			$targetUrl = $fieldValue->url() . $prefix . '_' . $filename;
 		} else {
 			$targetPath = $imagePath;
 			$targetUrl = $img->url();
 		}
-		$jpeg_quality = 90;
 
-		$p = pathinfo($filename); 
-		$extension = strtolower($p['extension']); 
-	
-		switch($extension) {
-			case 'gif': $img_r = imagecreatefromgif($imagePath); break;
-			case 'png': $img_r = imagecreatefrompng($imagePath); break;
-			case 'jpeg':
-			case 'jpg': $img_r = imagecreatefromjpeg($imagePath); break;
-		}
-	
-		$dst_r = ImageCreateTrueColor( $targetWidth, $targetHeight);
-	
-		imagecopyresampled($dst_r,$img_r,0,0,$crop['x1'],$crop['y1'],$targetWidth,$targetHeight,$crop['w'],$crop['h']);
+// horst >>
+		// using the PageImageManipulator module
+		$pim = wire('modules')->get('PageImageManipulator')->imLoad();
+		$boolResult = $pim->fileThumbnailModule($imagePath, $targetPath, $crop['x1'], $crop['y1'], $crop['w'], $crop['h'], $targetWidth, $targetHeight, $quality, $sharpening);
+		unset($pim);
 
-		// write to file
-		switch($extension) {
-			case 'gif': 
-				imagegif($dst_r,$targetPath); 
-				break;
-			case 'png': 
-				// convert 1-100 (worst-best) scale to 0-9 (best-worst) scale for PNG 
-				$quality = round(abs(($jpeg_quality - 100) / 11.111111)); 
-				imagepng($dst_r,$targetPath,$quality); 
-				break;
-			case 'jpeg':
-			case 'jpg': 
-				imagejpeg($dst_r,$targetPath,$jpeg_quality); 
-				break;
-		}
-		
+		// want use this to create previous used cropRectangle, but must be done in crop.js and I don't know how
+		$more_params = '&amp;x1='.$crop['x1'].'&amp;y1='.$crop['y1'].'&amp;w='.$crop['w'].'&amp;h='.$crop['h'];
+// << horst
+
 		// Timestamp prevents browser cache, at least I hope so :)
 		$timestamp = time();
 		$out  = "<div id='results'><img src='{$targetUrl}?timestamp={$timestamp}' />";
 		//$out .= "<ul><li><button class='ui-button ui-widget ui-corner-all head_button_clone ui-state-default' onclick=\"parent.$('.ui-dialog-content').dialog('close');\">Wow, that looks great!</button></li>";
+// horst >>
 		$out .= "<ul><li><button class='ui-button ui-widget ui-corner-all head_button_clone ui-state-default' onclick=\"window.close();\">" . $this->_("Wow, that looks great!") . "</button></li>";
-		if ($prefix) $out .= "<li><a class='modal' href='../?filename={$filename}&prefix={$prefix}&width={$targetWidth}&height={$targetHeight}&pages_id={$pages_id}&field={$field}&modal=1'>" . $this->_("Not happy? Crop again!") . "</a></li>";
+		if ($prefix) $out .= "<li><a class='modal' href='../?filename={$filename}&amp;prefix={$prefix}&amp;width={$targetWidth}&amp;height={$targetHeight}&amp;pages_id={$pages_id}&amp;field={$field}&amp;modal=1{$more_params}'>" . $this->_("Not happy? Crop again!") . "</a></li>";
+// << horst
 		$out .= "</ul></div>";
 		return $out;
 	}
-	
+
 	/**
 	 * Build a form allowing configuration of this Module
 	 *
 	 */
 	static public function getModuleConfigInputfields(array $data) {
-		
+
 		$data = array_merge(self::getDefaultData(), $data);
 
 		$fields = new InputfieldWrapper();
 		$modules = Wire::getFuel('modules');
-		
+
 		/*
 		 TODO: Should use Pageimage class for resizes when cropping original
 		$f= $modules->get('InputfieldCheckbox');
@@ -193,22 +239,33 @@ FORM;
 		$f->attr('checked', empty($data['cropOriginal']) ? '' : 'checked');
 		$fields->append($f);
 		*/
-		
-		/* OLD CONFIGURATION 
+
+		/* OLD CONFIGURATION
 		$f = $modules->get('InputfieldTextarea');
-		$f->attr('name', 'crops'); 
+		$f->attr('name', 'crops');
 		$f->attr('rows', 5);
-		$f->attr('value', $data['crops']); 
+		$f->attr('value', $data['crops']);
 		$f->label = 'Crop setups';
-		$f->description = 'Enter all crop dimensions, one on each line and in this format: name,width,height. Few examples: "thumbnail,200,200" or "portrait,200,600"'; 
+		$f->description = 'Enter all crop dimensions, one on each line and in this format: name,width,height. Few examples: "thumbnail,200,200" or "portrait,200,600"';
 		$fields->append($f);
 		*/
 		return $fields;
 	}
-	
+
 	public function ___install() {
 		parent::___install();
-		
+
+// horst >>
+		// check that at least the minimum version number of PageImageManipulator is installed:
+		$needed = '0.0.5';
+		$a = wire('modules')->get('PageImageManipulator')->getModuleInfo();
+		$actual = preg_replace('/(\d)(?=\d)/', '$1.', str_pad("{$a['version']}", 3, "0", STR_PAD_LEFT));
+		if(version_compare($actual, $needed, '<')) {
+			throw new WireException(sprintf($this->_(__CLASS__ . " requires PageImageManipulator %s or newer. Please update."), $needed));
+			return;
+		}
+// << horst
+
 		$this->modules->get('FieldtypeCropImage');
 		$this->modules->get('InputfieldCropImage');
 
@@ -220,13 +277,13 @@ FORM;
 		$p->process = $this;
 		$p->save();
 	}
-	
+
 	public function ___uninstall() {
 		parent::___uninstall();
-		
+
 		$p = $this->pages->get(3)->children()->get('name=image-crop');
 		if ($p->id) $p->delete();
-		
+
 		$p = $this->permissions->get('image-crop');
 		if ($p->id) $p->delete();
 	}
