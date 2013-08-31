@@ -162,6 +162,31 @@ FORM;
 				break;
 		}
 		
+		if(!$page->$prefix) {
+
+			if(!wire('fields')->get($prefix)){ //If field with name matching the crop name doesn't exist, create it
+				$f = new Field(); // create new field object
+				$f->type = $this->modules->get("FieldtypeImage"); // get a field type
+				$f->name = $prefix;
+				$f->label = ucwords(str_replace('_', ' ', $prefix));
+				$f->description = 'This field stores user cropped images from other image fields on this page. To see new additions, you need to save this page.';
+				$f->save(); // save the field
+			}
+
+			$page->template->fields->add($prefix); //Add field to the page's template. This separated out in case the field already exists, but is not in this template
+				$page->template->fields->save();
+		}
+
+		$page->$prefix->add($targetPath); //Add the image to the field
+		$page->save($prefix);
+
+		//If the developer sets the maxFiles value for the field to '1' and there is already an image in there, then delete the first one after adding the new one.
+		//This seems to be necessary because the maxFiles = 1 setting doesn't limit addition of extra images via the API
+		if(wire('fields')->get($prefix)->maxFiles==1 && count($page->$prefix) > 1){
+			$page->$prefix->delete($page->$prefix->first());
+			$page->save($prefix);
+		}		
+		
 		// Timestamp prevents browser cache, at least I hope so :)
 		$timestamp = time();
 		$out  = "<div id='results'><img src='{$targetUrl}?timestamp={$timestamp}' />";
