@@ -32,7 +32,13 @@ class ProcessCropImage extends Process implements ConfigurableModule  {
 	}
 
 	public function init() {
-		$this->pimBoost = (bool)wire('modules')->isInstalled('PageImageManipulator');
+		if(true === ($this->pimBoost = (bool)wire('modules')->isInstalled('PageImageManipulator'))) {
+			// now check that at least the minimum version number is installed:
+			$needed = '0.0.8';
+			$a = wire('modules')->get('PageImageManipulator')->getModuleInfo();
+			$actual = preg_replace('/(\d)(?=\d)/', '$1.', str_pad("{$a['version']}", 3, "0", STR_PAD_LEFT));
+			$this->pimBoost = version_compare($actual, $needed, '<') ? false : true;
+		}
 		$this->pimBoostPermanent = $this->pimBoost && is_array(wire('config')->imageManipulatorOptions) && isset(wire('config')->imageManipulatorOptions['thumbnailCoordsPermanent']) ? wire('config')->imageManipulatorOptions['thumbnailCoordsPermanent'] : false;
 		require_once(dirname(__FILE__).'/../CropImageKeepCoords.class.php');
 	}
