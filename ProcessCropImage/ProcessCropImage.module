@@ -33,7 +33,7 @@ class ProcessCropImage extends Process implements ConfigurableModule  {
 
 	public function init() {
 		if(true === ($this->pimBoost = (bool)wire('modules')->isInstalled('PageImageManipulator'))) {
-			// now check that at least the minimum version number is installed:
+			// now check that at least the minimum version is installed:
 			$needed = '0.0.8';
 			$a = wire('modules')->get('PageImageManipulator')->getModuleInfo();
 			$actual = preg_replace('/(\d)(?=\d)/', '$1.', str_pad("{$a['version']}", 3, "0", STR_PAD_LEFT));
@@ -50,10 +50,11 @@ class ProcessCropImage extends Process implements ConfigurableModule  {
 			'cropping' => true,
 			'quality' => 90,
 			'sharpening' => 'soft',
-			'bgcolor' => 127,
+			'bgcolor' => array(255,255,255,0),
 			'targetFilename' => null,
 			'outputFormat' => null,
-			'colorize' => 'none'
+			'colorize' => 'none',
+			'thumbnailColorizeCustom' => array(0,0,0),
 		);
 		$configOptions1 = wire('config')->imageSizerOptions;
 		if(!is_array($configOptions1)) $configOptions1 = array();
@@ -62,7 +63,7 @@ class ProcessCropImage extends Process implements ConfigurableModule  {
 		$sessionOptions = wire('session')->cropImageOptions;
 		if(!is_array($sessionOptions)) $sessionOptions = array();
 		$res = array_merge($defaultOptions, $configOptions1, $configOptions2, $sessionOptions);
-		if(!in_array($res['colorize'], array('none','grayscale','sepia','cyan'))) {
+		if(!in_array($res['colorize'], array('none','grayscale','sepia','cyan','custom'))) {
 			$res['colorize'] = 'none';
 		}
 		return $res;
@@ -175,6 +176,7 @@ class ProcessCropImage extends Process implements ConfigurableModule  {
 	  <option>grayscale</option>
 	  <option>sepia</option>
 	  <option>cyan</option>
+	  <option>custom</option>
 	</select>
 	<span style="float:right; margin:5px 15px 0 0;"><label for="show_preview">{$showPreview} </label> <input type="checkbox" checked="checked" name="show_preview" id="show_preview"></span>
 </form>
