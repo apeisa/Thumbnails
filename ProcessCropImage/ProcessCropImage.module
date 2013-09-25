@@ -278,6 +278,8 @@ FORM;
 			if($crop['w']>0 && $crop['h']>0) {
 				$img_r = imagecreatefromstring(file_get_contents($targetPath));
 				$dst_r = imagecreatetruecolor($crop['w'], $crop['h']);
+				imagealphablending($dst_r, false);
+
 				imagecopy($dst_r, $img_r, 0, 0, $crop['x1'], $crop['y1'], $crop['w'], $crop['h']);
 				// we write to file
 				switch($extension) {
@@ -287,6 +289,7 @@ FORM;
 					case 'png':
 						// convert 1-100 (worst-best) scale to 0-9 (best-worst) scale for PNG
 						$quality = round(abs(($jpeg_quality - 100) / 11.111111));
+						imagesavealpha($dst_r, true);
 						imagepng($dst_r,$targetPath,$quality);
 						break;
 					case 'jpeg':
