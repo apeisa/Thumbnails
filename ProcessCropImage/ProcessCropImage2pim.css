@@ -3,7 +3,33 @@ body.modal, #content {
 	padding: 0;
 	background: #444;
 }
-
+form.hd {
+    position: relative;
+    overflow: hidden;
+}
+form.hd dl {
+    position: relative;
+    overflow: hidden;
+    float: left;
+    margin: 5px 0;
+}
+form.hd dl dt {
+    float: left;
+    padding: 0;
+    /* width: 100px; */
+}
+form.hd dl dd {
+    float: left;
+    border: 0; /* Reset old css style */
+    padding: 0; /* Reset old css style */
+    margin-left: 10px;
+}
+form.hd .ui-button.ui-state-default {
+    padding: 3px 6px;
+}
+form.hd .ui-button:hover {
+    padding: 3px 6px;
+}
 #content .container {
 	max-width: none;
 }
@@ -17,30 +43,12 @@ body.modal, #content {
 	top: 0px;
 	left: 0px;
 	right: 0px;
-	height: 60px;
 	z-index: 9999;
 }
 
 #hd p {
 	margin: 0;
 	padding: 0;
-}
-
-#hd p.description {
-	position: fixed;
-	top: 5px;
-	right: 5px;
-	margin-left: 350px;
-	text-align:right;
-}
-
-#hd form {
-	position: fixed;
-	top: 0;
-	left: 0;
-	padding: 6px 20px;
-	min-width:320px;
-	max-width:350px;
 }
 
 #hd form label {
