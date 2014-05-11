@@ -73,8 +73,8 @@ class FieldtypeCropImage extends FieldtypeImage {
 			return;
 		}
 		
-		if ($this->w < 1 || $this->h < 1) {
-			throw new WireException(sprintf($this->_("Width and/or height not found for thumb: %s"), $thumb));
+		if ($this->w < 1 && $this->h < 1) {
+			throw new WireException(sprintf($this->_("Width and height not found for thumb: %s"), $thumb));
 			return;
 		}				
 
