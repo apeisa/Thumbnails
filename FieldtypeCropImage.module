@@ -88,9 +88,19 @@ class FieldtypeCropImage extends FieldtypeImage {
 			
 			// But we check if the size matches for desired and resize if not
 			$sizer = new ImageSizer($imgPath);
-			if ($this->w != $sizer->getWidth() || $this->h != $sizer->getHeight()) {
-				$this->_copyAndResize($img, $imgPath);
-			}
+			if ($this->w == 0) {
+ 		        	// check only height
+ 		        	if($this->h != $sizer->getHeight()) {
+ 		          		$this->_copyAndResize($img, $imgPath);
+ 		        	}
+ 		      	} else if ($this->h == 0) {
+ 		        	// check only width
+ 		        	if ($this->w != $sizer->getWidth()) {
+ 		          		$this->_copyAndResize($img, $imgPath);
+ 				}
+ 		      	} else if ($this->w != $sizer->getWidth() || $this->h != $sizer->getHeight()) {
+ 		        	$this->_copyAndResize($img, $imgPath);
+ 		      	}
 			 
 			// And finally we return the url
 			$event->return = $imgUrl;
