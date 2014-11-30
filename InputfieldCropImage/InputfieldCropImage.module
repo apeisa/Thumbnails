@@ -55,7 +55,7 @@ class InputfieldCropImage extends InputfieldImage {
 				$cropLinks = $this->_getCropLinks($crops, $cropUrl, $pagefile);
 				
 				if (!empty($cropLinks)) {
-					$cropStr = "\n\t\t\t<div class='ui-widget-content crops'><p class='description'>" . $this->_("Thumbnails (hover to preview, click to crop)") . "</p>". $this->_getCropLinks($applicableCrops, $cropUrl, $pagefile) . "</div>";
+					$cropStr = "\n\t\t\t<div class='InputfieldFileData ui-widget-content crops'><p class='description'>" . $this->_("Thumbnails (hover to preview, click to crop)") . "</p>". $this->_getCropLinks($applicableCrops, $cropUrl, $pagefile) . "</div>";
 					// We add our crop string at the end of the list item that holds image
 					$out .= $cropStr;
 				}
