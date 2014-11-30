@@ -10,4 +10,6 @@ $(document).ready(function() {
 		}
 	});
 
+	$('.InputfieldCropImage').addClass('InputfieldImage');
+
 });
