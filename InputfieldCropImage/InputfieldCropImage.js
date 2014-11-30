@@ -9,8 +9,5 @@ $(document).ready(function() {
 			$(this).find("img").remove();
 		}
 	});
-	
-	$(".InputfieldCropImage .InputfieldFileList").live('AjaxUploadDone', function() {
-		$("a.InputfieldFileLink", $(this)).fancybox(); 
-	}); 
+
 });
