@@ -253,7 +253,8 @@ FORM;
 
 		$page = wire('pages')->get($pages_id);
 		if(!$page->id) throw new WireException("Invalid page");
-		if(!$page->editable()) throw new WirePermissionException("Not Editable");
+		$editable = $page instanceof RepeaterPage ? $page->getForPage()->editable() : $page->editable();
+		if(!$editable) throw new WirePermissionException("Not Editable");
 
 		$fieldValue = $page->get($field);
 		if(!$fieldValue || !$fieldValue instanceof Pagefiles) throw new WireException("Invalid field");
