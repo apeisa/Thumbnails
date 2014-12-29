@@ -10,7 +10,7 @@ class ProcessCropImage extends Process implements ConfigurableModule  {
 			'title' => __('Image cropping tool', __FILE__), // Module Title
 			'summary' => __('Crop thumbnails (Configuration Settings moved to CropImage field settings).', __FILE__), // Module Summary
 			'href' => 'http://processwire.com/talk/index.php/topic,705.0.html',
-			'version' => 102,
+			'version' => 104,
 			'permanent' => false,
 			'autoload' => false,
 			'singular' => true,
@@ -89,7 +89,7 @@ class ProcessCropImage extends Process implements ConfigurableModule  {
 		$field = wire('sanitizer')->fieldName($this->input->get->field);
 
 		if (preg_match("/_repeater[0-9]+$/", $field)) {
-			$pages_id = (int) end(explode("_repeater", $field));
+			$pages_id = (int) end((explode("_repeater", $field)));
 			$field = str_replace("_repeater$pages_id", "", $field);
 		} else {
 			$pages_id = (int) $this->input->get->pages_id;
@@ -104,7 +104,8 @@ class ProcessCropImage extends Process implements ConfigurableModule  {
 			$out = "<p class='description'>" . $this->_("This page only works when you come from image field.") . "</p>";
 		} else {
 			$page = wire('pages')->get($pages_id);
-			if(!$page->editable()) throw new WirePermissionException('Not Editable');
+			$editable = $page instanceof RepeaterPage ? $page->getForPage()->editable() : $page->editable;
+			if(!$editable) throw new WirePermissionException('Not Editable');
 			$fieldValue = $page->get($field);
 			if(!$fieldValue || !$fieldValue instanceof Pageimages) throw new WireException("Invalid field");
 			$img = $fieldValue->get("$filename");
