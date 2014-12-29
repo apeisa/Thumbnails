@@ -10,7 +10,7 @@ class ProcessCropImage extends Process implements ConfigurableModule  {
 			'title' => __('Image cropping tool', __FILE__), // Module Title
 			'summary' => __('Crop thumbnails (Configuration Settings moved to CropImage field settings).', __FILE__), // Module Summary
 			'href' => 'http://processwire.com/talk/index.php/topic,705.0.html',
-			'version' => 104,
+			'version' => 105,
 			'permanent' => false,
 			'autoload' => false,
 			'singular' => true,
