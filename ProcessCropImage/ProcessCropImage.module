@@ -104,7 +104,7 @@ class ProcessCropImage extends Process implements ConfigurableModule  {
 			$out = "<p class='description'>" . $this->_("This page only works when you come from image field.") . "</p>";
 		} else {
 			$page = wire('pages')->get($pages_id);
-			$editable = $page instanceof RepeaterPage ? $page->getForPage()->editable() : $page->editable;
+			$editable = $page instanceof RepeaterPage ? $page->getForPage()->editable() : $page->editable();
 			if(!$editable) throw new WirePermissionException('Not Editable');
 			$fieldValue = $page->get($field);
 			if(!$fieldValue || !$fieldValue instanceof Pageimages) throw new WireException("Invalid field");
