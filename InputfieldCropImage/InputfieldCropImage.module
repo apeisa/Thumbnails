@@ -41,7 +41,7 @@ class InputfieldCropImage extends InputfieldImage {
 				$cropItems = explode(',', trim($v));
 				if (count($cropItems) > 3) {
 					$cropTemplates = array_slice($cropItems, 3);
-					if (in_array($page->template, $cropTemplates)) {
+					if (in_array(strtolower($page->template), $cropTemplates)) {
 						$applicableCrops[] = $cropArray[$k];
 					}
 				} else { // Any non-template-specific crops are automatically added to the list for all cropimage fields

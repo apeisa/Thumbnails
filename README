@@ -3,7 +3,7 @@ How to install
 
 Just add files and folders to your site/modules/ folder and install one of the modules (it installs others). After that create new field or edit existing image field and make it use fieldtype "CropImage".
 
-You can change the settings for each field in the Setup->Files->CropImageField Input tab:
+You can change the settings for each field in the Setup->Fields->CropImageField Input tab:
 
 thumbnail,100,100
 portrait,100,150
