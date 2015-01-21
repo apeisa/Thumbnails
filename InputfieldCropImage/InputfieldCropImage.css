@@ -25,3 +25,7 @@
 .InputfieldCropImage .InputfieldFileData {
 	margin-bottom: 0;
 }
+
+.InputfieldImageGrid .crops {
+	display: none;
+}
