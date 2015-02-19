@@ -263,7 +263,7 @@ FORM;
 		if(!$img) throw new WireException("Invalid filename");
 		$imagePath = $img->filename();
 
-		if (strlen($prefix) > 1) {
+		if (strlen($prefix) > 0) {
 			$targetPath = $fieldValue->path() . $prefix . '_' . $filename;
 			$targetUrl = $fieldValue->url() . $prefix . '_' . $filename;
 		} else {
